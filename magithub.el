@@ -290,6 +290,14 @@ defaults to \"GitHub repo: <user>/\"."
                      predicate require-match initial-input hist def
                      inherit-input-method)))
 
+(defun magithub-read-repo-default ()
+  (let ((url (thing-at-point 'url)))
+    (and url
+         (string-match "github.com" url)
+         (replace-regexp-in-string
+          ".+github.com\\(?::\\|/\\)\\([^/]+/[^/]+?\\)\\(?:/.*\\|.git\\'\\|\\'\\)"
+          "\\1" url))))
+
 (defun magithub-read-repo (&optional prompt predicate require-match initial-input
                                      hist def inherit-input-method)
   "Read a GitHub user-repository pair with completion.
@@ -305,11 +313,13 @@ WARNING: This function currently doesn't work fully, since
 GitHub's user search API only returns an apparently random subset
 of users, and also has no way to search for users whose names
 begin with certain characters."
-  (setq hist (or hist 'magithub-repos-history))
   (let ((result (completing-read
                  (or prompt "GitHub repo (user/repo): ")
                  (magithub--lazy-completion-callback 'magithub--repo-completions)
-                 predicate require-match initial-input hist def inherit-input-method)))
+                 predicate require-match initial-input
+                 (or hist 'magithub-repos-history)
+                 (or def (magithub-read-repo-default))
+                 inherit-input-method)))
     (if (string= result "")
         (when require-match (error "No repository given"))
       (magithub-parse-repo result))))
