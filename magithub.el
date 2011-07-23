@@ -372,15 +372,15 @@ and return (USERNAME . REPONAME)."
 
 (defvar magithub-map nil "The magithub prefix keymap.")
 (define-prefix-command 'magithub-prefix 'magithub-map)
-(define-key magithub-map (kbd "C") 'magithub-create-from-local)
-(define-key magithub-map (kbd "c") 'magithub-clone)
-(define-key magithub-map (kbd "f") 'magithub-fork-current)
-(define-key magithub-map (kbd "p") 'magithub-pull-request)
-(define-key magithub-map (kbd "t") 'magithub-track)
-(define-key magithub-map (kbd "g") 'magithub-gist-repo)
-(define-key magithub-map (kbd "S") 'magithub-toggle-ssh)
-(define-key magithub-map (kbd "b") 'magithub-browse-item)
-(define-key magit-mode-map (kbd "'") 'magithub-prefix)
+(define-key magithub-map "C" 'magithub-create-from-local)
+(define-key magithub-map "c" 'magithub-clone)
+(define-key magithub-map "f" 'magithub-fork-current)
+(define-key magithub-map "p" 'magithub-pull-request)
+(define-key magithub-map "t" 'magithub-track)
+(define-key magithub-map "g" 'magithub-gist-repo)
+(define-key magithub-map "S" 'magithub-toggle-ssh)
+(define-key magithub-map "b" 'magithub-browse-item)
+(define-key magit-mode-map "'" 'magithub-prefix)
 
 
 ;;; Requests
@@ -982,9 +982,9 @@ prefix arg, clone using SSH."
 
 (defvar magithub-message-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-c C-c") 'magithub-message-send)
-    (define-key map (kbd "C-c C-k") 'magithub-message-cancel)
-    (define-key map (kbd "C-c C-]") 'magithub-message-cancel)
+    (define-key map "\C-c\C-c" 'magithub-message-send)
+    (define-key map "\C-c\C-k" 'magithub-message-cancel)
+    (define-key map "\C-c\C-]" 'magithub-message-cancel)
     map)
   "The keymap for `magithub-message-mode'.")
 
@@ -1145,7 +1145,7 @@ With ARG, use SSH if and only if ARG is positive."
 
 (defvar magithub-minor-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-c ' b") 'magithub-browse-file)
+    (define-key map "\C-c'b" 'magithub-browse-file)
     map))
 
 (define-minor-mode magithub-minor-mode
