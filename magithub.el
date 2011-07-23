@@ -1157,9 +1157,4 @@ deactivate `magithub-minor-mode' on all buffers in its repository."
 
 (provide 'magithub)
 
-;;;###autoload
-(eval-after-load 'magit
-  '(unless (featurep 'magithub)
-     (require 'magithub)))
-
 ;;; magithub.el ends here
