@@ -442,6 +442,7 @@ rather than the JSON response object."
                         (when magithub-parse-response
                           (search-forward "\n\n" nil t)) ; Move past headers
                         (magithub-handle-errors status)
+                        (set-buffer-multibyte t)
                         (apply callback
                                (if (not magithub-parse-response)
                                    (current-buffer)
@@ -468,6 +469,7 @@ Like `url-retrieve-synchronously', except for the following:
     (let ((url-request-data (magithub-make-query-string magithub-request-data)))
       (with-current-buffer (url-retrieve-synchronously (magit-request-url path))
         (goto-char (point-min))
+        (set-buffer-multibyte t)
         (if (not magithub-parse-response) (current-buffer)
           (search-forward "\n\n" nil t) ; Move past headers
           (let* ((data (let ((json-object-type 'plist)) (json-read)))
