@@ -976,13 +976,12 @@ prefix arg, clone using SSH."
 
 (defvar magithub-pre-message-window-configuration nil)
 
-(macrolet
-    ((define-it (parent-mode)
-       `(define-derived-mode magithub-message-mode ,parent-mode "Magithub Message Edit"
-          "A mode for editing pull requests and other GitHub messages."
-          (run-mode-hooks 'magithub-message-mode-hook))))
-  (if (featurep 'markdown-mode) (define-it markdown-mode)
-    (define-it text-mode)))
+(eval
+ `(define-derived-mode magithub-message-mode ,(if (require 'markdown-mode nil t)
+                                                  'markdown-mode
+                                                'text-mode)
+    "Magithub Message Edit"
+    "A mode for editing pull requests and other GitHub messages."))
 
 (defmacro with-magithub-message-mode (&rest body)
   "Runs BODY with Magit's log-edit functions usable with Magithub's message mode."
