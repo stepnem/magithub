@@ -68,6 +68,10 @@ This should only ever be `let'-bound, not set outright.")
 This caches the result of `magithub-repo-obj' and
 `magithub-cached-repo-obj'.")
 
+(defvar magithub-status-buffer nil
+  "The Magit status buffer for the current buffer's Git repository.")
+(make-variable-buffer-local 'magithub-status-buffer)
+
 
 ;;; Utilities
 
@@ -357,6 +361,7 @@ and return (USERNAME . REPONAME)."
 
 ;;; Bindings
 
+(defvar magithub-map nil "The magithub prefix keymap.")
 (define-prefix-command 'magithub-prefix 'magithub-map)
 (define-key magithub-map (kbd "C") 'magithub-create-from-local)
 (define-key magithub-map (kbd "c") 'magithub-clone)
@@ -391,7 +396,7 @@ If `url-request-method' is GET, the returned URL will include
 (defmacro magithub-with-auth (&rest body)
   "Runs BODY with GitHub authorization info in `magithub-request-data'."
   (declare (indent 0))
-  (let ((auth (gensym)))
+  (let ((auth (make-symbol "auth")))
     `(let* ((,auth (magithub-auth-info))
             (magithub-request-data (append (list
                                             (cons "login" (car ,auth))
@@ -399,6 +404,7 @@ If `url-request-method' is GET, the returned URL will include
                                            magithub-request-data)))
        ,@body)))
 
+(defvar magithub-handle-errors t)
 (defun magithub-handle-errors (status)
   "Handle any errors reported in a `url-retrieve' callback.
 STATUS is the first argument passed to the callback.
@@ -409,7 +415,7 @@ signaled."
   (loop for (name val) on status by 'cddr
         do (when (eq name :error)
              (if (not magithub-handle-errors)
-                 (signal (var val) (cdr val))
+                 (signal (car val) (cdr val))
                (condition-case err
                    (let* ((json-object-type 'plist)
                           (data (json-read))
@@ -528,14 +534,14 @@ The repos are decoded JSON objects (plists)."
   "Run a GitHub user search for USER.
 Return an array of all matching users.
 
-WARNING: WARNING: This function currently doesn't work fully,
-since GitHub's user search API only returns an apparently random
-subset of users."
+WARNING: This function currently doesn't work fully, since
+GitHub's user search API only returns an apparently random subset
+of users."
   (if (string= user "") []
     (let ((url-request-method "GET"))
       (plist-get
        (magithub-retrieve-synchronously
-        (list "user" "search" string))
+        (list "user" "search" user))
        :users))))
 
 (defun magithub-repo-obj (&optional username repo)
@@ -798,9 +804,9 @@ If ANCHOR is given, it's used as the anchor in the URL."
     (magithub-browse-compare (car magit-current-range) (cdr magit-current-range) anchor)))
 
 (defun magithub-browse-diff (section)
-  "Show the GitHub webpage for the diff displayed in DIFF-SECTION.
+  "Show the GitHub webpage for the diff displayed in SECTION.
 This must be a diff from a *magit-diff* buffer."
-  (magithub-browse-diffbuff (format "diff-%d" (magithub-section-index diff-section))))
+  (magithub-browse-diffbuff (format "diff-%d" (magithub-section-index section))))
 
 (defun magithub-browse-hunk-at-point ()
   "Show the GitHub webpage for the hunk at point.
@@ -1133,10 +1139,6 @@ With ARG, use SSH if and only if ARG is positive."
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c ' b") 'magithub-browse-file)
     map))
-
-(defvar magithub-status-buffer nil
-  "The Magit status buffer for the current buffer's Git repository.")
-(make-variable-buffer-local 'magithub-status-buffer)
 
 (define-minor-mode magithub-minor-mode
   "Minor mode for files in a GitHub repository.
