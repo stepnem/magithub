@@ -15,7 +15,7 @@
 
 ;; This package does two things.  First, it extends Magit's UI with
 ;; assorted GitHub-related functionality, similar to the github-gem
-;; tool (http://github.com/defunkt/github-gem).  Second, it uses
+;; tool (<http://github.com/defunkt/github-gem>).  Second, it uses
 ;; Magit's excellent Git library to build an Elisp library for
 ;; interfacing with GitHub's API.
 
@@ -326,8 +326,7 @@ begin with certain characters."
 
 (defun magithub--repo-completions (string)
   "Try completing the given GitHub user/repository pair.
-STRING is the text already in the minibuffer, PREDICATE is a
-predicate that the string must satisfy."
+STRING is the text already in the minibuffer."
   (destructuring-bind (username . rest) (split-string string "/")
     (if (not rest) ;; Need to complete username before we start completing repo
         (mapcar (lambda (user) (concat (plist-get user :name) "/"))
@@ -494,9 +493,8 @@ Like `url-retrieve-synchronously', except for the following:
             (kill-buffer)
             data))))))
 
-
 ;;; Configuration
-;; This API was taken from gist.el (http://github.com/defunkt/gist.el),
+;; This API was taken from gist.el (<http://github.com/defunkt/gist.el>),
 ;; and renamed to avoid conflict.  The code also uses Magit rather
 ;; than relying on the Git executable directly.
 
@@ -1017,9 +1015,9 @@ prefix arg, clone using SSH."
 OPERATION is the name of what will happen when C-c C-c is used,
 printed as a message when the buffer is opened."
   (let ((dir default-directory)
-	(buf (get-buffer-create magithub-message-buffer-name)))
+        (buf (get-buffer-create magithub-message-buffer-name)))
     (setq magithub-pre-message-window-configuration
-	  (current-window-configuration))
+          (current-window-configuration))
     (pop-to-buffer buf)
     (setq default-directory dir)
     (magithub-message-mode)
