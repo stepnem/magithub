@@ -380,7 +380,8 @@ and return (USERNAME . REPONAME)."
 (define-key magithub-map "g" 'magithub-gist-repo)
 (define-key magithub-map "S" 'magithub-toggle-ssh)
 (define-key magithub-map "b" 'magithub-browse-item)
-(define-key magit-mode-map "'" 'magithub-prefix)
+(unless (lookup-key magit-mode-map "'")
+  (define-key magit-mode-map "'" 'magithub-prefix))
 
 
 ;;; Requests
