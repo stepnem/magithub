@@ -1028,22 +1028,62 @@ printed as a message when the buffer is opened."
 
 ;;; Forking Repos
 
+(defvar magithub-fork-current-dwim nil
+  "When non-nil, silently modify user's config during in-place forking.
+When nil, the config file will be visited and you asked to edit
+it yourself inside a recursive edit level.
+
+You can toggle this variable temporarily by providing
+`magithub-fork-current' with an argument.
+
+You can also simply redefine `magithub-fork-current-callback' to
+completely change the behaviour and invalidate this doc string.
+
+By default, the original \"remote.origin\" section will be
+renamed to \"remote.upstream\" with its \"fetch\" config set to
+\"+refs/heads/*:refs/remotes/upstream/*\", and a new
+\"remote.origin\" section set up to point to the fork. Depending
+on your very own Git traits and customs, this might be great, or
+it might not (i.e., note that any additional settings you might
+have had in the original remote can become wrong after the
+rename).")
+
+(defun magithub-fork-current-callback (obj owner repo buffer dwim)
+  (with-current-buffer buffer
+    (magit-with-refresh
+      (let ((url (magithub-repo-url (car (magithub-auth-info)) repo 'ssh))
+            (fetch (format "+refs/heads/*:refs/remotes/%s/*"
+                           (if dwim "upstream" "origin"))))
+        (if dwim (progn (magit-git-string "config" "--rename-section"
+                                          "remote.origin" "remote.upstream")
+                        (magit-set fetch "remote" "upstream" "fetch")
+                        (magit-git-string "remote" "add" "origin" url))
+          (find-file
+           (expand-file-name "config"
+                             (magit-git-string "rev-parse" "--git-dir")))
+          (when (y-or-n-p "Make the automatic replacements? ")
+            (save-excursion (replace-regexp "\\(/\\|\"\\)origin\\1" "\\1upstream\\1"))
+            (undo-boundary)
+            (re-search-forward "^\\[remote \"upstream\"\\]" nil t)
+            (forward-line 0)
+            (insert "[remote \"origin\"]\n\turl = " url
+                    "\n\tfetch = " fetch ?\n))
+          (message "%s" (substitute-command-keys "Save the file and type\
+ \\[exit-recursive-edit] when finished"))
+          (recursive-edit)))))
+  (message "Forked %s/%s" owner repo))
+
 ;;;###autoload
-(defun magithub-fork-current ()
+(defun magithub-fork-current (&optional arg)
   "Fork the current repository in place."
-  (interactive)
+  (interactive "P")
   (destructuring-bind (owner repo _) (magithub-repo-info)
     (let ((url-request-method "POST"))
       (magithub-retrieve (list "repos" "fork" owner repo)
-                         (lambda (obj owner repo buffer)
-                           (with-current-buffer buffer
-                             (magit-with-refresh
-                               (magit-set (magithub-repo-url
-                                           (car (magithub-auth-info))
-                                           repo 'ssh)
-                                          "remote" "origin" "url")))
-                           (message "Forked %s/%s" owner repo))
-                         (list owner repo (current-buffer))))))
+                         #'magithub-fork-current-callback
+                         (list owner repo (current-buffer)
+                               (if arg (not magithub-fork-current-dwim)
+                                 magithub-fork-current-dwim))))))
 
 (defun magithub-send-pull-request (text recipients)
   "Send a pull request with text TEXT to RECIPIENTS.
