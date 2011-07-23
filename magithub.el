@@ -679,6 +679,7 @@ unknown format), return nil."
 
 ;;; Network
 
+;;;###autoload
 (defun magithub-track (username &optional repo fetch)
   "Track USERNAME/REPO as a remote.
 If FETCH is non-nil, fetch that remote.
@@ -815,6 +816,7 @@ If ANCHOR is given, it's used as the anchor in the URL."
   (magithub-browse-current "blob" (magithub-name-rev-for-remote "HEAD" "origin")
                            path :anchor anchor))
 
+;;;###autoload
 (defun magithub-browse-item ()
   "Load a GitHub webpage describing the item at point.
 The URL of the webpage is added to the kill ring."
@@ -836,6 +838,7 @@ The URL of the webpage is added to the kill ring."
         (diff (magithub-browse-diffbuff)))))
    (magithub-browse-repo)))
 
+;;;###autoload
 (defun magithub-browse-file ()
   "Show the GitHub webpage for the current file.
 The URL for the webpage is added to the kill ring.  This only
@@ -857,6 +860,7 @@ contents of the region."
 
 ;;; Creating Repos
 
+;;;###autoload
 (defun magithub-gist-repo (&optional private)
   "Upload the current repo as a Gist.
 If PRIVATE is non-nil or with a prefix arg, the Gist is private.
@@ -892,6 +896,7 @@ the browser with `browse-url'."
         (when magithub-view-gist (browse-url url))
         (message "Gist created: %s" url)))))
 
+;;;###autoload
 (defun magithub-create-from-local (name &optional description homepage private)
   "Create a new GitHub repository for the current Git repository.
 NAME is the name of the GitHub repository, DESCRIPTION describes
@@ -1022,6 +1027,7 @@ printed as a message when the buffer is opened."
 
 ;;; Forking Repos
 
+;;;###autoload
 (defun magithub-fork-current ()
   "Fork the current repository in place."
   (interactive)
@@ -1055,6 +1061,7 @@ RECIPIENTS should be a list of usernames."
                          (kill-buffer)
                          (message "Your pull request was sent.")))))
 
+;;;###autoload
 (defun magithub-pull-request (recipients)
   "Compose a pull request and send it to RECIPIENTS.
 RECIPIENTS should be a list of usernames.
@@ -1067,6 +1074,7 @@ For non-interactive pull requests, see `magithub-send-pull-request'."
      'recipients (mapconcat 'identity recipients crm-separator)))
   (magithub-pop-to-message "send pull request"))
 
+;;;###autoload
 (defun magithub-toggle-ssh (&optional arg)
   "Toggle whether the current repo is checked out via SSH.
 With ARG, use SSH if and only if ARG is positive."
