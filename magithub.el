@@ -1035,7 +1035,7 @@ printed as a message when the buffer is opened."
   (destructuring-bind (owner repo _) (magithub-repo-info)
     (let ((url-request-method "POST"))
       (magithub-retrieve (list "repos" "fork" owner repo)
-                         (lambda (obj repo buffer)
+                         (lambda (obj owner repo buffer)
                            (with-current-buffer buffer
                              (magit-with-refresh
                                (magit-set (magithub-repo-url
@@ -1043,7 +1043,7 @@ printed as a message when the buffer is opened."
                                            repo 'ssh)
                                           "remote" "origin" "url")))
                            (message "Forked %s/%s" owner repo))
-                         (list repo (current-buffer))))))
+                         (list owner repo (current-buffer))))))
 
 (defun magithub-send-pull-request (text recipients)
   "Send a pull request with text TEXT to RECIPIENTS.
