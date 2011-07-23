@@ -1143,16 +1143,11 @@ With ARG, use SSH if and only if ARG is positive."
 
 ;;; Minor Mode
 
-(defvar magithub-minor-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map "\C-c'b" 'magithub-browse-file)
-    map))
-
 (define-minor-mode magithub-minor-mode
   "Minor mode for files in a GitHub repository.
 
 \\{magithub-minor-mode-map}"
-  :keymap magithub-minor-mode-map)
+  :keymap '(("\C-c'b" . magithub-browse-file)))
 
 (defun magithub-try-enabling-minor-mode ()
   "Activate `magithub-minor-mode' in this buffer if it's a Git buffer.
