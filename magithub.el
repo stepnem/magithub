@@ -703,7 +703,7 @@ arg, fetches the remote."
   "Load http://github.com/PATH#ANCHOR in a web browser and add it to the kill ring.
 Any nil elements of PATH are ignored.
 
-\n(fn &rest PATH [:anchor ANCHOR])"
+\n(fn PATH... [:anchor ANCHOR])"
   (destructuring-bind (path anchor)
       (loop for el on path-and-anchor
             if (car el)
@@ -721,7 +721,7 @@ With ANCHOR, loads the URL with that anchor.
 
 USER is `magithub-repo-owner' and REPO is `magithub-repo-name'.
 
-\n(fn &rest PATH [:anchor ANCHOR])"
+\n(fn PATH... [:anchor ANCHOR])"
   (apply 'magithub-browse (magithub-repo-owner) (magithub-repo-name) path-and-anchor))
 
 (defun magithub-browse-repo ()
