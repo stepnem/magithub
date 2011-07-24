@@ -4,6 +4,7 @@
 ;; Licensed under the same terms as Emacs.
 
 ;; Author: Nathan Weizenbaum
+;;         Štěpán Němec <stepnem@gmail.com>
 ;; URL: http://github.com/nex3/magithub
 ;; Version: 0.1
 ;; Created: 2010-06-06
@@ -22,7 +23,6 @@
 (require 'magit)
 (require 'url)
 (require 'json)
-(require 'crm)
 (eval-when-compile (require 'cl))
 
 
@@ -335,18 +335,6 @@ STRING is the text already in the minibuffer."
           (magithub--use-cache (concat username "/"))
         (mapcar (lambda (repo) (concat username "/" (plist-get repo :name)))
                 (magithub-repos-for-user username))))))
-
-(defun magithub-read-pull-request-recipients ()
-  "Read a list of recipients for a GitHub pull request."
-  (let ((collabs (magithub-repo-parent-collaborators))
-        (network (magithub-repo-network)))
-    (magithub--remove-if
-     (lambda (s) (string= s ""))
-     (completing-read-multiple
-      "Send pull request to: "
-      (mapcar (lambda (repo) (plist-get repo :owner)) (magithub-repo-network))
-      nil nil (concat (mapconcat 'identity collabs crm-separator)
-                      (if (= (length collabs) (length network)) "" crm-separator))))))
 
 (defun magithub-read-untracked-fork ()
   "Read the name of a fork of this repo that we aren't yet tracking.
@@ -1025,15 +1013,24 @@ printed as a message when the buffer is opened."
     (message "Type C-c C-c to %s (C-c C-k to cancel)." operation)))
 
 (defun magithub-message-send ()
-  "Finish writing the message and send it."
+  "Parse message contents and send it."
   (interactive)
-  (let ((recipients (with-magithub-message-mode
-                      (magit-log-edit-get-field 'recipients))))
-    (with-magithub-message-mode (magit-log-edit-set-fields nil))
-    (magithub-send-pull-request
-     (buffer-string) (split-string recipients crm-separator))
-    (let (magithub-message-confirm-cancellation)
-      (magithub-message-cancel))))
+  (macrolet ((with-parsed-headers (&rest body)
+               (declare (indent 0))     ; needless to say, doesn't work
+               `(let ,(mapcar (lambda (h)
+                                `(,h (with-magithub-message-mode
+                                       (magit-log-edit-get-field ',h))))
+                              '(title base head repo))
+                  ,@body)))
+    (with-parsed-headers
+      (magithub-send-pull-request
+       repo base head title
+       (buffer-substring-no-properties
+        (progn (goto-char (point-min))
+               (search-forward magithub-message-header-end)
+               (point))
+        (point-max)))
+      (bury-buffer))))
 
 (defun magithub-message-cancel ()
   "Abort and erase message being composed."
@@ -1100,34 +1097,45 @@ rename).")
                                (if arg (not magithub-fork-current-dwim)
                                  magithub-fork-current-dwim))))))
 
-(defun magithub-send-pull-request (text recipients)
-  "Send a pull request with text TEXT to RECIPIENTS.
-RECIPIENTS should be a list of usernames."
+(defun magithub-send-pull-request (repo base head title body)
+  "Send a pull request for REPO.
+BASE is the target branch or SHA for the request.
+HEAD is the branch or SHA to pull from. If it is a fork of the
+base repository, it should be prefixed with the user name, like
+\"user:branch\".
+TITLE is the title of the pull request and BODY is the body text."
   (let ((url-request-method "POST")
-        (magithub-request-data (cons (cons "message[body]" text)
-                                     (mapcar (lambda (recipient)
-                                               (cons "message[to][]" recipient))
-                                             recipients)))
-        (magithub-api-base magithub-github-url)
-        (url-max-redirections 0) ;; GitHub will try to redirect, but we don't care
+        (magithub-request-data `(("pull[base]" . ,base)
+                                 ("pull[head]" . ,head)
+                                 ("pull[title]" . ,title)
+                                 ("pull[body]" . ,body)))
         magithub-parse-response)
-    (magithub-retrieve (list (magithub-repo-owner) (magithub-repo-name)
-                             "pull_request" (magithub-name-rev-for-remote "HEAD" "origin"))
+    (magithub-retrieve (cons "pulls" (split-string repo "/" t))
                        (lambda (_)
                          (kill-buffer)
                          (message "Your pull request was sent.")))))
 
-;;;###autoload
-(defun magithub-pull-request (recipients)
-  "Compose a pull request and send it to RECIPIENTS.
-RECIPIENTS should be a list of usernames.
+(defvar magithub-pull-request-title-function (lambda (&rest _) (yow))
+  "*Function that should return a title for the pull request being composed.
+Called with three arguments, REPO, BASE and HEAD, meaning of
+which is detailed in the docstring of `magithub-send-pull-request'.")
 
-Interactively, reads RECIPIENTS via `magithub-read-pull-request-recipients'.
-For non-interactive pull requests, see `magithub-send-pull-request'."
-  (interactive (list (magithub-read-pull-request-recipients)))
-  (with-magithub-message-mode
-    (magit-log-edit-set-field
-     'recipients (mapconcat 'identity recipients crm-separator)))
+;;;###autoload
+(defun magithub-pull-request ()
+  "Compose a pull request."
+  (interactive)
+  (flet ((set-header (header val) (with-magithub-message-mode
+                                    (magit-log-edit-set-field header
+                                                              (or val "")))))
+    (let ((parent (plist-get (magithub-cached-repo-obj) :parent))
+          (base "master")
+          (head (magithub-name-rev-for-remote "HEAD" "origin")))
+      (mapc (apply-partially 'apply 'set-header)
+            `((repo ,parent)
+              (base ,base)
+              (head ,(if parent (concat (magithub-repo-owner) ":" head) head))
+              (title ,(funcall magithub-pull-request-title-function
+                               parent base head))))))
   (magithub-pop-to-message "send pull request"))
 
 ;;;###autoload
