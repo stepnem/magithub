@@ -393,7 +393,7 @@ If `url-request-method' is GET, the returned URL will include
 
 (defmacro magithub-with-auth (&rest body)
   "Runs BODY with GitHub authorization info in `magithub-request-data'."
-  (declare (indent 0))
+  (declare (debug t) (indent 0))
   (let ((auth (make-symbol "auth")))
     `(let* ((,auth (magithub-auth-info))
             (magithub-request-data (append (list
@@ -542,7 +542,7 @@ of users."
        :users))))
 
 (defun magithub-repo-obj (&optional username repo)
-  "Return an object representing the repo USERNAME/REPO.
+  "Return a fresh up-to-date object representing the repo USERNAME/REPO.
 Defaults to the current repo.
 
 The returned object is a decoded JSON object (plist)."
@@ -987,8 +987,8 @@ prefix arg, clone using SSH."
     "A mode for editing pull requests and other GitHub messages."))
 
 (defmacro with-magithub-message-mode (&rest body)
-  "Runs BODY with Magit's log-edit functions usable with Magithub's message mode."
-  (declare (indent 0))
+  "Run BODY with Magit's log-edit functions usable with Magithub's message mode."
+  (declare (debug t) (indent 0))
   `(let ((magit-log-edit-buffer-name magithub-message-buffer-name)
          (magit-log-header-end magithub-message-header-end)
          (magit-log-edit-confirm-cancellation
@@ -1143,8 +1143,9 @@ which is detailed in the docstring of `magithub-send-pull-request'.")
   "Toggle whether the current repo is checked out via SSH.
 With ARG, use SSH if and only if ARG is positive."
   (interactive "P")
-  (if (null arg) (setq arg (if (magithub-repo-ssh-p) -1 1))
-    (setq arg (prefix-numeric-value arg)))
+  (if arg (setq arg (prefix-numeric-value arg))
+    (setq arg (if (magithub-repo-ssh-p) -1 1)))
+  ;; FIXME this possibly clobbers unsuspecting settings
   (magit-set (magithub-repo-url (magithub-repo-owner) (magithub-repo-name) (> arg 0))
              "remote" "origin" "url")
   (magit-refresh-status))

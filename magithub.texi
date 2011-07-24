@@ -78,7 +78,7 @@ as a @url{http://gist.github.com, Gist} by typing @kbd{' g},
 since Gists are just Git repositories.
 
 When a Gist is created, the URL is copied to the kill ring
-and it's opened in the browser.
+and opened in the browser.
 You can disable the latter by setting @code{magithub-view-gist} to @code{nil}.
 
 Magithub does not support pasting snippets of files to Gist.
@@ -116,8 +116,8 @@ This will create a fork on GitHub and set that fork up as the default remote rep
 
 You can track a user's fork of your repository by typing @kbd{' t}
 and providing the user's name, and the name of the repository
-if it's different than your repository's name.
-This adds a remote named after the user tracking their fork.
+if it is different from your repository's name.
+This adds a remote named after the user, tracking their fork.
 With a prefix argument, it fetches the remote as well.
 
 @node GitHub Website
