@@ -293,9 +293,9 @@ defaults to \"GitHub repo: <user>/\"."
 (defun magithub-read-repo-default ()
   (let ((url (thing-at-point 'url)))
     (and url
-         (string-match "github.com" url)
+         (string-match "github\\.com" url)
          (replace-regexp-in-string
-          ".+github.com\\(?::\\|/\\)\\([^/]+/[^/]+?\\)\\(?:/.*\\|.git\\'\\|\\'\\)"
+          ".+github\\.com\\(?::\\|/\\)\\([^/]+/[^/]+?\\)\\(?:/.*\\|\\.git\\'\\|\\'\\)"
           "\\1" url))))
 
 (defun magithub-read-repo (&optional prompt predicate require-match initial-input
