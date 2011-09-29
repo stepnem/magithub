@@ -1109,6 +1109,8 @@ rename).")
                                (if arg (not magithub-fork-current-dwim)
                                  magithub-fork-current-dwim))))))
 
+;;; Pull Requests
+
 (defun magithub-send-pull-request (repo base head title body)
   "Send a pull request for REPO.
 BASE is the target branch or SHA for the request.
@@ -1149,6 +1151,77 @@ which is detailed in the docstring of `magithub-send-pull-request'.")
               (title ,(funcall magithub-pull-request-title-function
                                parent base head))))))
   (magithub-pop-to-message "send pull request"))
+
+(defun magithub--read-pull-request-caf (n)
+  (let ((req (assoc-default n minibuffer-completion-table)))
+    (concat " "
+            (propertize (plist-get req :title)
+                        'fontified t
+                        'button '(t)
+                        'category 'default-button
+                        'help-echo "RET or mouse-2 for details"
+                        'pr-data req
+                        'action (lambda (b) (magithub-pull-request-details
+                                             (button-get b 'pr-data)))))))
+
+(defvar magithub-pull-request-details-display-function 'tooltip-show)
+
+(defun magithub-pull-request-details (data)
+  (funcall
+   magithub-pull-request-details-display-function
+   (replace-regexp-in-string
+    "\r" ""
+    (mapconcat
+     'identity
+     (mapcar
+      (lambda (path)
+        (concat (capitalize (replace-regexp-in-string "[^a-z]" " " path))
+                ": "
+                (magithub<- data path)))
+      '("title" "user/name" "user/login" "head/label" "created_at" "body"))
+     "\n"))))
+
+(defun magithub-read-pull-request (&optional owner repo)
+  (unless owner (setq owner (magithub-repo-owner)))
+  (unless repo (setq repo (magithub-repo-name)))
+  (let ((collection
+         (mapcar      ; mapcar _ nil = nil, so `number-to-string' is safe here
+          (lambda (r) (cons (number-to-string (plist-get r :number)) r))
+          (flet ((prs (owner repo)
+                   (plist-get (magithub-retrieve-synchronously
+                               (list "pulls" owner repo "open"))
+                              :pulls)))
+            (let ((our (prs owner repo)))
+              (if (> (length our) 0) our
+                (let ((parent (plist-get (magithub-cached-repo-obj) :parent)))
+                  (if parent (apply 'prs (split-string parent "/" t))
+                    (error "No pull requests found for this or parent repo"))))))))
+        (completion-annotate-function 'magithub--read-pull-request-caf))
+    (completing-read "PR number: " collection)))
+
+(defun magithub-checkout-pull-request (n)
+  "Set up a branch named \"pull-request-N\" and pull the request head into it.
+N is the number of the pull request, read in the minibuffer when
+invoked interactively.
+Assumes we are in the Magit buffer of the appropriate repository,
+and the branch the request is based on is checked out."
+  (interactive (list (magithub-read-pull-request)))
+  (let ((req (magithub<-
+              (magithub-retrieve-synchronously
+               (list "pulls" (magithub-repo-owner) (magithub-repo-name) n))
+              "pull")))
+    (when req
+      (flet ((run (&rest args)
+               (magit-run* `(,magit-git-executable
+                             ,@magit-git-standard-options
+                             ,@args)))
+             (<- (path) (magithub<- req path)))
+        (let ((branch (concat "pull-request-" n)))
+          (magit-with-refresh
+           (when (or (equal (magit-get-current-branch) branch)
+                     (run "checkout" "-b" branch))
+             (run "pull" (<- "head/repository/url") (<- "head/ref")))))))))
+
 
 ;;;###autoload
 (defun magithub-toggle-ssh (&optional arg)
