@@ -1,0 +1,9 @@
+One obvious piece still missing is better interaction with GitHub issues, so
+that'd be next on my TODO list.
+
+(Reasons I haven't done it yet is firstly that I'm lazy and currently in a
+down phase of my Elisp manic depression, and secondly that recently there have
+been some signs of activity in that respect elsewhere[1], so I figured I'd
+wait what becomes of that.)
+
+[1] http://thread.gmane.org/gmane.emacs.orgmode/45570
