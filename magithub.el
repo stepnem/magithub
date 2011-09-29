@@ -89,6 +89,18 @@ Like `position', but without the cl runtime dependency.
 Comparison is done with `eq'."
   (loop for el in seq until (eq el item) count t))
 
+(defun magithub<- (obj path)
+  "Extract value stored at PATH in a data object returned by the GitHub API.
+In short, (magithub<- obj \"head/repository/url\") is equivalent
+to obj['head']['repository']['url'] in certain mainstream
+languages."
+  (let ((steps (mapcar (lambda (s) (intern (concat ":" s)))
+                       (split-string path "/"))))
+    (while steps
+      (setq obj (plist-get obj (car steps))
+            steps (cdr steps))))
+  obj)
+
 (defun magithub--cache-function (fn)
   "Return a lambda that will run FN but cache its return values.
 The cache is a very naive assoc from arguments to returns.
