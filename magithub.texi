@@ -25,8 +25,8 @@ Texts.
 @node Top
 @top Magithub User Manual
 
-Magithub is an Emacs interface for GitHub
-built on top of the Magit interface to Git.
+Magithub is an Emacs interface for GitHub built on top of the Magit 
+interface to Git.
 
 @menu
 * Introduction::
@@ -39,47 +39,53 @@ built on top of the Magit interface to Git.
 @node Introduction
 @chapter Introduction
 
-Magithub extends Magit by adding functionality specific to GitHub.
-It adds commands for creating and forking GitHub repositories,
-tracking forks on GitHub, sending pull requests,
-and using the @url{http://gist.github.com, Gist} paste site.
-It also provides a strong basis for further Emacs interaction with GitHub.
+Magithub extends Magit by adding functionality specific to GitHub.  It
+adds commands for creating and forking GitHub repositories, tracking
+forks on GitHub, sending pull requests, and using the
+@url{http://gist.github.com, Gist} paste site.  It also provides a
+strong basis for further Emacs interaction with GitHub.
 
-This manual covers all the user-facing features of Magithub,
-which are mostly in the form of additional commands
-added to the @code{magit-status} buffer.
-It assumes familiarity with Git and GitHub,
+This manual covers all the user-facing features of Magithub, which are
+mostly in the form of additional commands added to the
+@code{magit-status} buffer.  It assumes familiarity with Git and GitHub,
 and at least some familiarity with Magit.
 
-All Magithub commands accessible in the status buffer
-begin with the prefix @kbd{'} (single quote)
-to avoid conflicting with built-in Magit commands.
-Just as in Magit, these commands will be available in all @code{magit-mode} buffers,
-but may not necessarily make sense in all contexts.
+All Magithub commands accessible in the status buffer begin with the
+prefix @kbd{'} (single quote) to avoid conflicting with built-in Magit
+commands.  Just as in Magit, these commands will be available in all
+@code{magit-mode} buffers, but may not necessarily make sense in all
+contexts.
 
 @node New Repositories
 @chapter New Repositories
 
+@menu
+* GitHub Repositories::
+* Gists::
+@end menu
+
+@node GitHub Repositories
 @section GitHub Repositories
 
-To push the current Git repository to a new GitHub repository, type @kbd{' C}.
-This will prompt for various bits of information (name, description, homepage),
-create the GitHub repository, and push.
-Once the GitHub repository has been created,
-Magithub will make it the default remote repository.
+To push the current Git repository to a new GitHub repository, type
+@kbd{' C}.  This will prompt for various bits of information (name,
+description, homepage), create the GitHub repository, and push.  Once
+the GitHub repository has been created, Magithub will make it the
+default remote repository.
 
-By default, the new GitHub repository is public.
-With a prefix arg, it will be private instead.
+By default, the new GitHub repository is public.  With a prefix arg, it
+will be private instead.
 
+@node Gists
 @section Gists
 
-You can also push the current Git repository
-as a @url{http://gist.github.com, Gist} by typing @kbd{' g},
-since Gists are just Git repositories.
+You can also push the current Git repository as a
+@url{http://gist.github.com, Gist} by typing @kbd{' g}, since Gists are
+just Git repositories.
 
-When a Gist is created, the URL is copied to the kill ring
-and opened in the browser.
-You can disable the latter by setting @code{magithub-view-gist} to @code{nil}.
+When a Gist is created, the URL is copied to the kill ring and it's
+opened in the browser.  You can disable the latter by setting
+@code{magithub-view-gist} to @code{nil}.
 
 Magithub does not support pasting snippets of files to Gist.
 For that, @url{http://github.com/defunkt/gist.el, gist.el} is more appropriate.
@@ -87,6 +93,12 @@ For that, @url{http://github.com/defunkt/gist.el, gist.el} is more appropriate.
 @node Existing Repositories
 @chapter Existing Repositories
 
+@menu
+* Cloning::
+* Forking::
+@end menu
+
+@node Cloning
 @section Cloning
 
 You can clone a GitHub repository by typing @kbd{' c}.
@@ -104,6 +116,7 @@ but if you make a lot of clones you might want to bind it.
 
 You can toggle between the private URL and the public URL using @kbd{' S}.
 
+@node Forking
 @section Forking
 
 Once you've checked out a GitHub repository, you can fork it by typing @kbd{' f}.
@@ -112,16 +125,26 @@ This will create a fork on GitHub and set that fork up as the default remote rep
 @node GitHub Network
 @chapter GitHub Network
 
+@menu
+* Tracking::
+@end menu
+
+@node Tracking
 @section Tracking
 
 You can track a user's fork of your repository by typing @kbd{' t}
 and providing the user's name, and the name of the repository
-if it is different from your repository's name.
-This adds a remote named after the user, tracking their fork.
+if it's different than your repository's name.
+This adds a remote named after the user tracking their fork.
 With a prefix argument, it fetches the remote as well.
 
 @node GitHub Website
 @chapter GitHub Website
+
+@menu
+* Browsable Magit Buffers::
+* Other Browsable Buffers::
+@end menu
 
 Most Magit and Magithub buffers have direct parallels on the GitHub website.
 Magithub makes these all available by typing @kbd{' b}
@@ -129,6 +152,7 @@ Magithub makes these all available by typing @kbd{' b}
 This opens the relevant GitHub page in your browser using @code{browse-url}
 and copies the URL to the kill ring.
 
+@node Browsable Magit Buffers
 @section Browsable Magit Buffers
 
 Typing @kbd{' b} when the point is on a commit
