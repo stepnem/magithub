@@ -1164,16 +1164,15 @@ With ARG, use SSH if and only if ARG is positive."
   "Activate `magithub-minor-mode' in this buffer if it's a Git buffer.
 This means it's visiting a Git-controlled file and a Magit buffer
 is open for that file's repo."
-  (block nil
-    (if magithub-minor-mode (return))
-    (unless buffer-file-name (return))
-    ;; Try to find the Magit status buffer for this file.
-    ;; If it doesn't exist, don't activate magithub-minor-mode.
-    (let* ((topdir (magit-get-top-dir (file-name-directory buffer-file-name)))
-           (status (magit-find-buffer 'status topdir)))
-      (unless status (return))
-      (magithub-minor-mode 1)
-      (setq magithub-status-buffer status))))
+  (or magithub-minor-mode
+      (not buffer-file-name)
+      ;; Try to find the Magit status buffer for this file.
+      ;; If it doesn't exist, don't activate `magithub-minor-mode'.
+      (let* ((topdir (magit-get-top-dir (file-name-directory buffer-file-name)))
+             (status (magit-find-buffer 'magit-status-mode topdir)))
+        (when status
+          (magithub-minor-mode 1)
+          (setq magithub-status-buffer status)))))
 
 (defun magithub-try-disabling-minor-mode ()
   "Deactivate `magithub-minor-mode' in this buffer if it's no longer a Git buffer.
@@ -1201,25 +1200,8 @@ See `magithub-try-enabling-minor-mode'."
     (call-interactively 'magithub-create-from-local)))
 (add-hook 'magit-init-hook 'magithub-magit-init-hook)
 
-(defun magithub-magit-mode-hook ()
-  "Enable `magithub-minor-mode' in buffers that are now in a Magit repo.
-If the new `magit-mode' buffer is a status buffer, try enabling
-`magithub-minor-mode' in all buffers."
-  (when (eq major-mode 'magit-status-mode)
-    (magithub-try-enabling-minor-mode-everywhere)))
-(add-hook 'magit-mode-hook 'magithub-magit-mode-hook)
-
-(defun magithub-kill-buffer-hook ()
-  "Clean up `magithub-minor-mode'.
-That is, if the buffer being killed is a Magit status buffer,
-deactivate `magithub-minor-mode' on all buffers in its repository."
-  (when (eq major-mode 'magit-status-mode)
-    (magithub-try-disabling-minor-mode-everywhere)))
-(add-hook 'kill-buffer-hook 'magithub-kill-buffer-hook)
-
 (add-hook 'find-file-hook 'magithub-try-enabling-minor-mode)
 
 
 (provide 'magithub)
-
 ;;; magithub.el ends here
