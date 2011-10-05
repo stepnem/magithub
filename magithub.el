@@ -824,23 +824,24 @@ If ANCHOR is given, it's used as the anchor in the URL."
 ;;;###autoload
 (defun magithub-browse-item ()
   "Load a GitHub webpage describing the item at point.
-The URL of the webpage is added to the kill ring."
+The URL of the webpage is added to the `kill-ring'."
   (interactive)
   (or
    (magit-section-action (item info "browse")
      ((commit) (magithub-browse-commit info))
      ((diff)
-      (case magit-submode
-        (commit (magithub-browse-commit-diff (magit-current-section)))
-        (diff (magithub-browse-diff (magit-current-section)))))
+      (case major-mode
+        (magit-commit-mode
+         (magithub-browse-commit-diff (magit-current-section)))
+        (magit-diff-mode (magithub-browse-diff (magit-current-section)))))
      ((hunk)
-      (case magit-submode
-        (commit (magithub-browse-commit-hunk-at-point))
-        (diff (magithub-browse-hunk-at-point))))
+      (case major-mode
+        (magit-commit-mode (magithub-browse-commit-hunk-at-point))
+        (magit-diffmode (magithub-browse-hunk-at-point))))
      (t
-      (case magit-submode
-        (commit (magithub-browse-commit magit-currently-shown-commit))
-        (diff (magithub-browse-diffbuff)))))
+      (case major-mode
+        (magit-commit-mode (magithub-browse-commit magit-currently-shown-commit))
+        (magit-diff-mode (magithub-browse-diffbuff)))))
    (magithub-browse-repo)))
 
 ;;;###autoload
@@ -1204,7 +1205,7 @@ See `magithub-try-enabling-minor-mode'."
   "Enable `magithub-minor-mode' in buffers that are now in a Magit repo.
 If the new `magit-mode' buffer is a status buffer, try enabling
 `magithub-minor-mode' in all buffers."
-  (when (eq magit-submode 'status)
+  (when (eq major-mode 'magit-status-mode)
     (magithub-try-enabling-minor-mode-everywhere)))
 (add-hook 'magit-mode-hook 'magithub-magit-mode-hook)
 
@@ -1212,7 +1213,7 @@ If the new `magit-mode' buffer is a status buffer, try enabling
   "Clean up `magithub-minor-mode'.
 That is, if the buffer being killed is a Magit status buffer,
 deactivate `magithub-minor-mode' on all buffers in its repository."
-  (when (and (eq major-mode 'magit-mode) (eq magit-submode 'status))
+  (when (eq major-mode 'magit-status-mode)
     (magithub-try-disabling-minor-mode-everywhere)))
 (add-hook 'kill-buffer-hook 'magithub-kill-buffer-hook)
 
